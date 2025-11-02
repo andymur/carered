@@ -1,5 +1,6 @@
 package com.andymur.carered.controller;
 
+import com.andymur.carered.model.ErrorResponse;
 import com.andymur.carered.model.RepositoryScore;
 import com.andymur.carered.model.RepositoryScoreResponse;
 import com.andymur.carered.service.ScoreService;
@@ -50,5 +51,20 @@ class RepoScoreControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
     }
+
+    @Test
+    void shouldReturnClientErrorWhenLanguageIsNotSupported() throws Exception {
+        ErrorResponse mockResponse = new ErrorResponse("Rust is not supported");
+
+        mockMvc.perform(
+                        get("/api/repositories")
+                                .param("language", "Rust")
+                                .param("created_before", "2025-01-01")
+                )
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
+    }
+
+    //TODO: add more tests for edge cases
 }
 

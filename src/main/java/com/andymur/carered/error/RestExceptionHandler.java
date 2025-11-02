@@ -1,5 +1,6 @@
 package com.andymur.carered.error;
 
+import com.andymur.carered.model.ErrorResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,31 +9,37 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 public class RestExceptionHandler {
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<String> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         if ("created_before".equals(ex.getName())) {
             return ResponseEntity.badRequest().body(
-                    "Invalid date format for 'created_before'. Expected format: YYYY-MM-DD"
-            );
+                    new ErrorResponse("Invalid date format for 'created_before'. Expected format: YYYY-MM-DD"
+                    ));
+        } else if ("language".equals(ex.getName()) && ex.getRootCause() instanceof UnsupportedLanguageException) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(ex.getRootCause().getMessage()));
         }
 
-        return ResponseEntity.badRequest().body("Invalid parameter: " + ex.getName());
+        return ResponseEntity.badRequest().body(new ErrorResponse("Invalid parameter: " + ex.getName()));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<String> handleMissingParam(MissingServletRequestParameterException ex) {
-        if (ex.getParameterName().equals("created_before")) {
-            return ResponseEntity.badRequest()
-                    .body("Missing required query parameter 'created_before' (format: YYYY-MM-DD)");
-        }
-        return ResponseEntity.badRequest().body("Missing required parameter: " + ex.getParameterName());
+    public ResponseEntity<ErrorResponse> handleMissingParam(MissingServletRequestParameterException ex) {
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse("Missing required parameter: " + ex.getParameterName())
+        );
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
-        if (ex.getMessage().contains("Invalid language")) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(RuntimeException ex) {
+        if (ex instanceof IncorrectPageSizeException
+                || ex instanceof IncorrectPageException) {
+            return ResponseEntity.badRequest().body(
+                    new ErrorResponse(ex.getMessage())
+            );
         }
-        return ResponseEntity.badRequest().body("Bad request: " + ex.getMessage());
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse("Bad request: " + ex.getMessage())
+        );
     }
 }

@@ -32,7 +32,6 @@ public class RepositoryScoreCache {
             LocalDate date,
             int page
     ) {
-
         return cache.computeIfAbsent(
                 RepositoryScoreKey.of(language, date.atStartOfDay().toEpochSecond(ZoneOffset.UTC), page),
                 k -> repositoryScoreMapper.mapGitHubResponse(

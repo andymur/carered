@@ -9,6 +9,8 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 
 @Service
 public class GitHubService {
+    private static final Logger log = LoggerFactory.getLogger(GitHubService.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String GITHUB_API_URL = "https://api.github.com/search/repositories";
 
@@ -34,9 +37,12 @@ public class GitHubService {
             int page,
             int pageSize
     ) {
+        log.info("fetchGitHubRepositories; calling GitHub API");
+        Request httpRequest = createHttpRequest(language, formatter.format(createdStart), page, pageSize);
         try {
-            return fetchGitHub(createHttpRequest(language, formatter.format(createdStart), page, pageSize));
+            return fetchGitHub(httpRequest);
         } catch (Exception e) {
+            log.error("Error while fetching data from GitHub using httpRequest: " + httpRequest, e);
             throw new GitHubServerError(e);
         }
     }
@@ -48,7 +54,7 @@ public class GitHubService {
                 .addQueryParameter("per_page", String.valueOf(pageSize))
                 .addQueryParameter("page", String.valueOf(page))
                 .build();
-
+        log.debug("createHttpRequest; HTTP request created with url: {}", url);
         return new Request.Builder()
                 .url(url)
                 .addHeader("Accept", "application/vnd.github+json")
@@ -61,7 +67,7 @@ public class GitHubService {
     ) throws IOException {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("Unexpected response: " + response);
+                throw new IllegalStateException("Unexpected response: " + response);
             }
             String body = response.body().string();
             return objectMapper.readValue(body, GitHubSearchResponse.class);

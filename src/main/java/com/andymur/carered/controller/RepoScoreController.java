@@ -37,17 +37,22 @@ public class RepoScoreController {
             @RequestParam(name = "page", defaultValue = "0", required = false) Integer page,
             @RequestParam(name = "page_size", defaultValue = "100", required = false) Integer pageSize
     ) {
+        log.info("getRepositories; get repositories with scores by parameters: language = {}, created_start = {}, page = {}, page_size = {}",
+                language, createdStart, page, pageSize);
         checkPageAvailability(page, pageSize);
         RepositoryScoreResponse response = scoreService.fetchRepositoriesScores(
                 language.name(),
                 createdStart,
                 page,
                 pageSize);
+        log.info("getRepositories; returning repositories with scores response: total repository count = {} repository count on page = {}",
+                response.getTotalCount(), response.getRepositories().size());
         return ResponseEntity.ok().body(response);
     }
 
     private void checkPageAvailability(int page, int pageSize) {
         if (page * pageSize - 1 >= AVAILABLE_ITEMS_LIMIT) {
+            log.error("Page {} of size {} is out of available items", page, pageSize);
             throw new IncorrectPageException(page, pageSize);
         }
     }

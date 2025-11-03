@@ -1,5 +1,7 @@
 package com.andymur.carered.error;
 
+import static com.andymur.carered.controller.RepoScoreController.AVAILABLE_ITEMS_LIMIT;
+
 public class IncorrectPageException extends RuntimeException {
 
     private final int page;
@@ -12,6 +14,6 @@ public class IncorrectPageException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return "Payload on page " + page + " with page size " + pageSize + " exceeds supported payload size";
+        return "Payload on page " + page + " with page size " + pageSize + " exceeds supported payload size of " + AVAILABLE_ITEMS_LIMIT;
     }
 }

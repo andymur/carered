@@ -41,27 +41,31 @@ class RepositoryCachedScoreServiceTest {
 
     @Test
     void shouldCreateScoreResponseWhenGetNormalResponseFromGitHub() {
-        Instant now = Instant.now();
-        LocalDate today = now.atZone(ZoneId.systemDefault())
+        Instant createdAt = Instant.now();
+        Instant updatedAt = Instant.now();
+
+        LocalDate createdStart = createdAt.minus(10, ChronoUnit.DAYS).atZone(ZoneId.systemDefault())
                 .toLocalDate();
 
-        Mockito.when(gitHubService.fetchGitHubRepositories("Java", today, 0, 100)).thenReturn(
+        Mockito.when(gitHubService.fetchGitHubRepositories("Java", createdStart, 0, 100)).thenReturn(
                 createGitHubSearchResponse(100, List.of(
                         createGitHubRepositoryItem("test",
                                 "Java",
                                 "http://test.test",
                                 10,
                                 20,
-                                now.minus(10, ChronoUnit.DAYS)
+                                updatedAt,
+                                createdAt
                         )
                 ))
         );
 
-        scoreService.fetchRepositoriesScores("Java", today, 0, 100);
-        RepositoryScoreResponse actualResponse = scoreService.fetchRepositoriesScores("Java", today, 0, 100);
+        scoreService.fetchRepositoriesScores("Java", createdStart, 0, 100);
+        RepositoryScoreResponse actualResponse = scoreService.fetchRepositoriesScores("Java", createdStart, 0, 100);
 
         Mockito.verify(gitHubService, Mockito.times(1))
-                .fetchGitHubRepositories("Java", today, 0, 100);
+                .fetchGitHubRepositories("Java", createdStart, 0, 100);
+
         assertEquals(100, actualResponse.getTotalCount());
         assertEquals(1, actualResponse.getRepositories().size());
         assertEquals(

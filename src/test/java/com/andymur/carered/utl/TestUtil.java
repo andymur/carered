@@ -23,6 +23,7 @@ public class TestUtil {
             String url,
             int stars,
             int forksCount,
+            Instant createdAt,
             Instant updatedAt
     ) {
         GitHubRepositoryItem item = new GitHubRepositoryItem();
@@ -32,6 +33,7 @@ public class TestUtil {
         item.setStars(stars);
         item.setForksCount(forksCount);
         item.setUpdatedAt(updatedAt);
+        item.setCreatedAt(createdAt);
         return item;
     }
 }

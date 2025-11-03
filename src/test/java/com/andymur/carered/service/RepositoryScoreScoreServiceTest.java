@@ -4,8 +4,6 @@ import com.andymur.carered.component.RepositoryScoreMapper;
 import com.andymur.carered.component.calculator.LnScoreCalculator;
 import com.andymur.carered.model.RepositoryScore;
 import com.andymur.carered.model.RepositoryScoreResponse;
-import com.andymur.carered.model.github.GitHubRepositoryItem;
-import com.andymur.carered.model.github.GitHubSearchResponse;
 import com.andymur.carered.service.github.GitHubService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,22 +39,26 @@ class RepositoryScoreScoreServiceTest {
 
     @Test
     void shouldCreateScoreResponseWhenGetNormalResponseFromGitHub() {
-        Instant now = Instant.now();
-        LocalDate today = now.atZone(ZoneId.systemDefault())
+        Instant createdAt = Instant.now();
+        Instant updatedAt = Instant.now();
+
+        LocalDate createdStart = createdAt.minus(10, ChronoUnit.DAYS).atZone(ZoneId.systemDefault())
                 .toLocalDate();
 
-        Mockito.when(gitHubService.fetchGitHubRepositories("Java", today, 0, 100)).thenReturn(
+        Mockito.when(gitHubService.fetchGitHubRepositories("Java", createdStart, 0, 100)).thenReturn(
                 createGitHubSearchResponse(100, List.of(
                         createGitHubRepositoryItem("test",
                                 "Java",
                                 "http://test.test",
                                 10,
                                 20,
-                                now.minus(10, ChronoUnit.DAYS)
+                                updatedAt,
+                                createdAt
                         )
                 ))
         );
-        RepositoryScoreResponse actualResponse = repositoryScoreService.fetchRepositoriesScores("Java", today, 0, 100);
+
+        RepositoryScoreResponse actualResponse = repositoryScoreService.fetchRepositoriesScores("Java", createdStart, 0, 100);
         assertEquals(100, actualResponse.getTotalCount());
         assertEquals(1, actualResponse.getRepositories().size());
         assertEquals(

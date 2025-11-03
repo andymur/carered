@@ -31,11 +31,11 @@ public class RepositoryScoreService implements ScoreService {
 
     public RepositoryScoreResponse fetchRepositoriesScores(
             String language,
-            LocalDate createdBefore,
+            LocalDate createdStart,
             int page,
             int pageSize
     ) {
-        GitHubSearchResponse gitHubSearchResponse = gitHubService.fetchGitHubRepositories(language, createdBefore, page, pageSize);
+        GitHubSearchResponse gitHubSearchResponse = gitHubService.fetchGitHubRepositories(language, createdStart, page, pageSize);
         return scoreMapper.mapGitHubResponse(gitHubSearchResponse);
     }
 }

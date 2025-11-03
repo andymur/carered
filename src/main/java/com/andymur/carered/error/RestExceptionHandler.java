@@ -12,9 +12,9 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        if ("created_before".equals(ex.getName())) {
+        if ("created_start".equals(ex.getName())) {
             return ResponseEntity.badRequest().body(
-                    new ErrorResponse("Invalid date format for 'created_before'. Expected format: YYYY-MM-DD"
+                    new ErrorResponse("Invalid date format for 'created_start'. Expected format: YYYY-MM-DD"
                     ));
         } else if ("language".equals(ex.getName()) && ex.getRootCause() instanceof UnsupportedLanguageException) {
             return ResponseEntity.badRequest().body(new ErrorResponse(ex.getRootCause().getMessage()));

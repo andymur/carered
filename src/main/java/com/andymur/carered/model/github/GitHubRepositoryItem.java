@@ -20,29 +20,14 @@ public class GitHubRepositoryItem {
     @JsonProperty("forks_count")
     private int forksCount;
 
+    @JsonProperty("created_at")
+    private Instant createdAt;
+
     @JsonProperty("updated_at")
     private Instant updatedAt;
 
     @JsonProperty("html_url")
     private String url;
-
-    public static GitHubRepositoryItem of(
-            String language,
-            String name,
-            int stars,
-            int forksCount,
-            Instant updatedAt,
-            String url
-    ) {
-        GitHubRepositoryItem item = new GitHubRepositoryItem();
-        item.stars = stars;
-        item.forksCount = forksCount;
-        item.updatedAt = updatedAt;
-        item.language = language;
-        item.name = name;
-        item.url = url;
-        return item;
-    }
 
     public String getName() {
         return name;
@@ -62,6 +47,10 @@ public class GitHubRepositoryItem {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
     public String getUrl() {
@@ -88,6 +77,10 @@ public class GitHubRepositoryItem {
         this.updatedAt = updatedAt;
     }
 
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public void setUrl(String url) {
         this.url = url;
     }
@@ -99,6 +92,7 @@ public class GitHubRepositoryItem {
                 ", name='" + name + '\'' +
                 ", stars=" + stars +
                 ", forksCount=" + forksCount +
+                ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", url='" + url + '\'' +
                 '}';

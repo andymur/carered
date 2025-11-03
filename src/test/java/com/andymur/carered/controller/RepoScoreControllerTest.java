@@ -46,7 +46,7 @@ class RepoScoreControllerTest {
         mockMvc.perform(
                         get("/api/repositories")
                                 .param("language", "Java")
-                                .param("created_before", "2025-01-01")
+                                .param("created_start", "2025-01-01")
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
@@ -59,7 +59,7 @@ class RepoScoreControllerTest {
         mockMvc.perform(
                         get("/api/repositories")
                                 .param("language", "Rust")
-                                .param("created_before", "2025-01-01")
+                                .param("created_start", "2025-01-01")
                 )
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));

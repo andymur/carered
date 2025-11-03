@@ -1,5 +1,6 @@
 package com.andymur.carered.controller;
 
+import com.andymur.carered.error.IncorrectPageException;
 import com.andymur.carered.model.Language;
 import com.andymur.carered.model.RepositoryScoreResponse;
 import com.andymur.carered.service.ScoreService;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api")
 public class RepoScoreController {
+    public static final int AVAILABLE_ITEMS_LIMIT = 1000;
 
     private static final Logger log = LoggerFactory.getLogger(RepoScoreController.class);
     private final ScoreService scoreService;
@@ -30,17 +32,23 @@ public class RepoScoreController {
     @GetMapping("/repositories")
     public ResponseEntity<RepositoryScoreResponse> getRepositories(
             @RequestParam Language language,
-            @RequestParam(name = "created_before")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdBefore,
+            @RequestParam(name = "created_start")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdStart,
             @RequestParam(name = "page", defaultValue = "0", required = false) Integer page,
             @RequestParam(name = "page_size", defaultValue = "100", required = false) Integer pageSize
     ) {
-        // Add 1000 items limitation check
+        checkPageAvailability(page, pageSize);
         RepositoryScoreResponse response = scoreService.fetchRepositoriesScores(
                 language.name(),
-                createdBefore,
+                createdStart,
                 page,
                 pageSize);
         return ResponseEntity.ok().body(response);
+    }
+
+    private void checkPageAvailability(int page, int pageSize) {
+        if (page * pageSize - 1 >= AVAILABLE_ITEMS_LIMIT) {
+            throw new IncorrectPageException(page, pageSize);
+        }
     }
 }

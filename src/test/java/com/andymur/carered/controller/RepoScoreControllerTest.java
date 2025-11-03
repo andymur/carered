@@ -65,6 +65,33 @@ class RepoScoreControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
     }
 
+    @Test
+    void shouldReturnClientErrorWhenExceedsSupportedNumberOfItems() throws Exception {
+        ErrorResponse mockResponse = new ErrorResponse("Payload on page 11 with page size 100 exceeds supported payload size of 1000 items");
+
+        mockMvc.perform(
+                        get("/api/repositories")
+                                .param("language", "Python")
+                                .param("created_start", "2025-01-01")
+                                .param("page", "11")
+                                .param("page_size", "100")
+                )
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
+    }
+
+    @Test
+    void shouldReturnClientErrorWhenRequiredParameterIsMissing() throws Exception {
+        ErrorResponse mockResponse = new ErrorResponse("Missing required parameter: language");
+
+        mockMvc.perform(
+                        get("/api/repositories")
+                                .param("created_start", "2025-01-01")
+                )
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
+    }
+
     //TODO: add more tests for edge cases
 }
 

@@ -14,6 +14,7 @@ public class IncorrectPageException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return "Payload on page " + page + " with page size " + pageSize + " exceeds supported payload size of " + AVAILABLE_ITEMS_LIMIT;
+        return "Payload on page " + page + " with page size " + pageSize + " exceeds supported payload size of "
+                + AVAILABLE_ITEMS_LIMIT + " items";
     }
 }

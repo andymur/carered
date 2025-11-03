@@ -12,11 +12,13 @@ public class LnScoreCalculator implements ScoreCalculator {
         if (featureMap == null || featureMap.isEmpty()) {
             return -1;
         }
-        return Math.round(
-                Math.log(
-                        featureMap.get(STARS_COUNT_FEATURE)
-                        + featureMap.get(FORK_COUNT_FEATURE)
-                        - featureMap.get(DAYS_PASSED_FEATURE)
+        return Math.max(0,
+                Math.round(
+                        Math.log(
+                                featureMap.get(STARS_COUNT_FEATURE)
+                                        + featureMap.get(FORK_COUNT_FEATURE)
+                                        - featureMap.get(DAYS_PASSED_FEATURE)
+                        )
                 )
         );
     }

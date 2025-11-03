@@ -1,5 +1,6 @@
 package com.andymur.carered.service.github;
 
+import com.andymur.carered.error.GitHubServerError;
 import com.andymur.carered.model.github.GitHubSearchResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -35,8 +36,8 @@ public class GitHubService {
     ) {
         try {
             return fetchGitHub(createHttpRequest(language, formatter.format(createdStart), page, pageSize));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new GitHubServerError(e);
         }
     }
 

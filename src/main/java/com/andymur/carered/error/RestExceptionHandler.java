@@ -37,6 +37,8 @@ public class RestExceptionHandler {
             return ResponseEntity.badRequest().body(
                     new ErrorResponse(ex.getMessage())
             );
+        } else if (ex instanceof GitHubServerError) {
+            return ResponseEntity.internalServerError().body(new ErrorResponse(ex.getMessage()));
         }
         return ResponseEntity.badRequest().body(
                 new ErrorResponse("Bad request: " + ex.getMessage())

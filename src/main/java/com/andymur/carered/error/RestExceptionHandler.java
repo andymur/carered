@@ -2,32 +2,40 @@ package com.andymur.carered.error;
 
 import com.andymur.carered.model.ErrorResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ServerWebInputException;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        if ("created_start".equals(ex.getName())) {
+    @ExceptionHandler(ServerWebInputException.class)
+    public ResponseEntity<ErrorResponse> handleWebInput(ServerWebInputException ex) {
+        String param = ex.getMethodParameter() != null ? ex.getMethodParameter().getParameterName() : null;
+        Throwable cause = ex.getCause();
+
+        if ("created_start".equals(param) && cause instanceof java.time.format.DateTimeParseException) {
             return ResponseEntity.badRequest().body(
-                    new ErrorResponse("Invalid date format for 'created_start'. Expected format: YYYY-MM-DD"
-                    ));
-        } else if ("language".equals(ex.getName()) && ex.getRootCause() instanceof UnsupportedLanguageException) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(ex.getRootCause().getMessage()));
+                    new ErrorResponse("Invalid date format for 'created_start'. Expected format: YYYY-MM-DD")
+            );
+        } else if ("language".equals(param) && hasCause(cause, UnsupportedLanguageException.class)) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(cause.getCause().getCause().getMessage()));
         }
 
-        return ResponseEntity.badRequest().body(new ErrorResponse("Invalid parameter: " + ex.getName()));
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse("Missing required parameter: " + (ex.getReason() != null ? ex.getReason() : ex.getMessage()))
+        );
     }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingParam(MissingServletRequestParameterException ex) {
-        return ResponseEntity.badRequest().body(
-                new ErrorResponse("Missing required parameter: " + ex.getParameterName())
-        );
+    private boolean hasCause(Throwable ex, Class<? extends Throwable> causeClass) {
+        Throwable current = ex;
+        while (current != null) {
+            if (causeClass.isInstance(current)) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     @ExceptionHandler(RuntimeException.class)

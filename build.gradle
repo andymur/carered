@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation("com.squareup.okhttp3:okhttp:5.1.0")
 	testImplementation 'org.jetbrains.kotlin:kotlin-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

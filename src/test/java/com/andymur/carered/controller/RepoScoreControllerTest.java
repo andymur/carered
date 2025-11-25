@@ -8,24 +8,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(RepoScoreController.class)
+@WebFluxTest(controllers = RepoScoreController.class)
 class RepoScoreControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockitoBean
     private ScoreService scoreService;
@@ -43,53 +40,65 @@ class RepoScoreControllerTest {
                 Mockito.eq("Java"), any(), anyInt(), anyInt()))
                 .thenReturn(mockResponse);
 
-        mockMvc.perform(
-                        get("/api/repositories")
-                                .param("language", "Java")
-                                .param("created_start", "2025-01-01")
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/repositories")
+                        .queryParam("language", "Java")
+                        .queryParam("created_start", "2025-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(mockResponse));
     }
 
     @Test
     void shouldReturnClientErrorWhenLanguageIsNotSupported() throws Exception {
         ErrorResponse mockResponse = new ErrorResponse("Rust is not supported");
 
-        mockMvc.perform(
-                        get("/api/repositories")
-                                .param("language", "Rust")
-                                .param("created_start", "2025-01-01")
-                )
-                .andExpect(status().is4xxClientError())
-                .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/repositories")
+                        .queryParam("language", "Rust")
+                        .queryParam("created_start", "2025-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(mockResponse));
     }
 
     @Test
     void shouldReturnClientErrorWhenExceedsSupportedNumberOfItems() throws Exception {
         ErrorResponse mockResponse = new ErrorResponse("Payload on page 11 with page size 100 exceeds supported payload size of 1000 items");
 
-        mockMvc.perform(
-                        get("/api/repositories")
-                                .param("language", "Python")
-                                .param("created_start", "2025-01-01")
-                                .param("page", "11")
-                                .param("page_size", "100")
-                )
-                .andExpect(status().is4xxClientError())
-                .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/repositories")
+                        .queryParam("language", "Python")
+                        .queryParam("created_start", "2025-01-01")
+                        .queryParam("page", "11")
+                        .queryParam("page_size", "100")
+                        .build())
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(mockResponse));
     }
 
     @Test
     void shouldReturnClientErrorWhenRequiredParameterIsMissing() throws Exception {
-        ErrorResponse mockResponse = new ErrorResponse("Missing required parameter: language");
+        ErrorResponse mockResponse = new ErrorResponse("Missing required parameter: Required query parameter 'language' is not present.");
 
-        mockMvc.perform(
-                        get("/api/repositories")
-                                .param("created_start", "2025-01-01")
-                )
-                .andExpect(status().is4xxClientError())
-                .andExpect(content().json(objectMapper.writeValueAsString(mockResponse)));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/repositories")
+                        .queryParam("created_start", "2025-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .json(objectMapper.writeValueAsString(mockResponse));
     }
 
     //TODO: add more tests for edge cases
